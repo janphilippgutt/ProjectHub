@@ -1,22 +1,46 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello Zag! Welcome to your project.")
+type PageData struct {
+	Name string
+}
+
+var homeTemplate *template.Template
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Create data per Request
+	data := PageData{
+		Name: "Zag",
+	}
+
+	// Execute template per Request
+	err := homeTemplate.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+	}
 }
 
 func main() {
 
-	http.HandleFunc("/", helloHandler)
+	// Parse template once at startup
+	var err error
 
-	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
-	err := http.ListenAndServe(":8080", nil)
+	homeTemplate, err = template.ParseFiles("templates/home.html")
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	http.HandleFunc("/", homeHandler)
+
+	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
+	serverErr := http.ListenAndServe(":8080", nil)
+	if serverErr != nil {
+		log.Fatal(serverErr)
 	}
 }
