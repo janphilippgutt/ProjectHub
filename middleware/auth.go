@@ -23,3 +23,17 @@ func AuthRequired(sess *scs.SessionManager) func(next http.Handler) http.Handler
 		})
 	}
 }
+
+func RequireAdmin(sess *scs.SessionManager) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role := sess.GetString(r.Context(), "role")
+			if role != "admin" {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}

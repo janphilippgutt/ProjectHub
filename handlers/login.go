@@ -41,11 +41,17 @@ func Login(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 				return
 			}
 
-			log.Println("Login attempt for:", email)
+			role := "user"
+			if email == "admin@example.com" {
+				role = "admin"
+			}
+
+			log.Println("Login attempt for:", email, "role:", role)
 
 			// Store session values
 			sess.Put(r.Context(), "authenticated", true)
 			sess.Put(r.Context(), "email", email)
+			sess.Put(r.Context(), "role", role)
 
 			// Redirect back to originally requested page if available
 			if next != "" {
