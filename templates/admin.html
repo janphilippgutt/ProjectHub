@@ -1,0 +1,11 @@
+{{ define "admin" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}Admin{{ end }}
+
+{{ define "content" }}
+<h2>Admin dashboard</h2>
+<p>Welcome, {{ .Email }}</p>
+<p>This area is protected and will contain moderation tools.</p>
+{{ end }}

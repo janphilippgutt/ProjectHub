@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/alexedwards/scs/v2"
-
 	"github.com/janphilippgutt/casproject/handlers"
+	"github.com/janphilippgutt/casproject/middleware"
 )
 
 func mustParse(name string, files ...string) *template.Template {
@@ -32,12 +32,19 @@ func main() {
 		"home":  mustParse("home", "templates/base.html", "templates/home.html"),
 		"login": mustParse("login", "templates/base.html", "templates/login.html"),
 		"about": mustParse("about", "templates/base.html", "templates/about.html"),
+		"admin": mustParse("admin", "templates/base.html", "templates/admin.html"),
 	}
 
 	r := chi.NewRouter()
 
 	// Wrap router with session manager middleware
 	r.Use(sessionManager.LoadAndSave)
+
+	// create the middleware
+	authMW := middleware.AuthRequired(sessionManager)
+
+	// use it for a route (we will add /admin next)
+	r.With(authMW).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
