@@ -42,9 +42,10 @@ func main() {
 
 	// create the middleware
 	authMW := middleware.AuthRequired(sessionManager)
+	requireAdmin := middleware.RequireAdmin(sessionManager)
 
 	// use it for a route (we will add /admin next)
-	r.With(authMW).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
+	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
