@@ -1,0 +1,10 @@
+{{ define "about" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}About{{ end }}
+
+{{ define "content" }}
+<p>{{ .Header }}</p>
+<p>{{ .Message }}</p>
+{{ end }}

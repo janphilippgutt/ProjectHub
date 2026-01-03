@@ -21,6 +21,7 @@ func main() {
 	tpls := map[string]*template.Template{
 		"home":  mustParse("home", "templates/base.html", "templates/home.html"),
 		"login": mustParse("login", "templates/base.html", "templates/login.html"),
+		"about": mustParse("about", "templates/base.html", "templates/about.html"),
 	}
 
 	r := chi.NewRouter()
@@ -28,6 +29,7 @@ func main() {
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"]))
 	r.Get("/login", handlers.Login(tpls["login"]))
+	r.Get("/about", handlers.About(tpls["about"]))
 
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
 	log.Fatal(http.ListenAndServe(":8080", r))
