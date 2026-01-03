@@ -10,26 +10,25 @@ import (
 	"github.com/janphilippgutt/casproject/handlers"
 )
 
+func mustParse(name string, files ...string) *template.Template {
+	t := template.Must(template.ParseFiles(files...))
+	log.Printf("parsed templates for %s: %q\n", name, t.DefinedTemplates())
+	return t
+}
+
 func main() {
+	// parse per-page template sets (base + specific page)
+	tpls := map[string]*template.Template{
+		"home":  mustParse("home", "templates/base.html", "templates/home.html"),
+		"login": mustParse("login", "templates/base.html", "templates/login.html"),
+	}
 
 	r := chi.NewRouter()
 
-	// Parse template once at startup
-
-	tmpl := template.Must(template.ParseFiles(
-		"templates/base.html",
-		"templates/home.html"))
-	/*if err != nil {
-		log.Fatal(err)
-	}*/
-
-	r.Get("/", handlers.Home(tmpl))
-
-	// http.HandleFunc("/", homeHandler)
+	// inject the correct template set into each handler
+	r.Get("/", handlers.Home(tpls["home"]))
+	r.Get("/login", handlers.Login(tpls["login"]))
 
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
-	serverErr := http.ListenAndServe(":8080", r)
-	if serverErr != nil {
-		log.Fatal(serverErr)
-	}
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

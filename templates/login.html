@@ -1,0 +1,13 @@
+{{ define "login" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}Login{{ end }}
+
+{{ define "content" }}
+<h2>Login with your Email</h2>
+<form action="/login" method="post">
+    <input type="email" name="email" required>
+    <button type="submit">Send login link</button>
+</form>
+{{ end }}
