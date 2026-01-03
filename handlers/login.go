@@ -4,13 +4,15 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/alexedwards/scs/v2"
 )
 
 type LoginData struct {
 	Email string
 }
 
-func Login(t *template.Template) http.HandlerFunc {
+func Login(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
@@ -31,12 +33,13 @@ func Login(t *template.Template) http.HandlerFunc {
 
 			log.Println("Login attempt for:", email)
 
-			// For now, just render the form again with the email pre-filled
-			data := LoginData{Email: email}
-			if err := t.ExecuteTemplate(w, "login", data); err != nil {
-				log.Println("template execute error:", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
+			// Store in session
+			sess.Put(r.Context(), "authenticated", true)
+			sess.Put(r.Context(), "email", email)
+
+			// Redirect to home after login (PRG pattern)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
 
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)

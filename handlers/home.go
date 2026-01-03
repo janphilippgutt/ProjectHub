@@ -6,15 +6,27 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/alexedwards/scs/v2"
 )
 
 type HomeData struct {
 	Name string
 }
 
-func Home(t *template.Template) http.HandlerFunc {
+func Home(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := HomeData{Name: "Zag"}
+		var name string
+
+		if sess.Exists(r.Context(), "authenticated") && sess.GetBool(r.Context(), "authenticated") {
+			// logged-in user
+			name = sess.GetString(r.Context(), "email")
+		} else {
+			// public visitor
+			name = "Guest"
+		}
+
+		data := HomeData{Name: name}
 
 		// Execute the page's entry template (named "home")
 		if err := t.ExecuteTemplate(w, "home", data); err != nil {
