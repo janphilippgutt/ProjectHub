@@ -29,6 +29,7 @@ func main() {
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"]))
 	r.Get("/login", handlers.Login(tpls["login"]))
+	r.Post("/login", handlers.Login(tpls["login"]))
 	r.Get("/about", handlers.About(tpls["about"]))
 
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
