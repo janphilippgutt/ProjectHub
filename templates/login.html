@@ -6,9 +6,16 @@
 
 {{ define "content" }}
 <h2>Login with your Email</h2>
+
+{{ if .Error }}
+    <div class="error" role="alert">{{ .Error }}</div>
+    {{ end }}
 <form action="/login" method="post">
-    <input type="email" name="email" value="{{ .Email }}" required>
-    <button type="submit">Send login link</button>
+    <label>
+        Email:
+        <input type="email" name="email" value="{{ .Email }}" required>
+    </label>
     <input type="hidden" name="next" value="{{ .Next }}">
+    <button type="submit">Send login link</button>
 </form>
 {{ end }}
