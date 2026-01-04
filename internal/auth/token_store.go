@@ -58,3 +58,26 @@ func (s *TokenStore) Use(token string) (string, bool) {
 	delete(s.tokens, token)
 	return entry.email, true
 }
+
+func (s *TokenStore) CleanupExpired() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	for token, entry := range s.tokens {
+		if now.After(entry.expiresAt) {
+			delete(s.tokens, token)
+		}
+	}
+}
+
+func (s *TokenStore) StartCleanup(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			s.CleanupExpired()
+		}
+	}()
+}

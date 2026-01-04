@@ -38,6 +38,8 @@ func main() {
 
 	tokenStore := auth.NewTokenStore()
 
+	tokenStore.StartCleanup(1 * time.Minute)
+
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.Cookie.HttpOnly = true
