@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/janphilippgutt/casproject/handlers"
+	"github.com/janphilippgutt/casproject/internal/db"
 	"github.com/janphilippgutt/casproject/middleware"
 )
 
@@ -20,6 +21,14 @@ func mustParse(name string, files ...string) *template.Template {
 }
 
 func main() {
+
+	dbPool, err := db.Connect()
+	if err != nil {
+		log.Fatal("database connection failed:", err)
+	}
+	defer dbPool.Close()
+
+	log.Println("database connected")
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
