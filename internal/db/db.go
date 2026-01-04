@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -10,6 +11,11 @@ import (
 )
 
 func Connect() (*pgxpool.Pool, error) {
+
+	if os.Getenv("DB_USER") == "" {
+		return nil, errors.New("DB_USER not set")
+	}
+
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",
 		os.Getenv("DB_USER"),

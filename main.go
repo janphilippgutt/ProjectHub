@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 
 	"github.com/janphilippgutt/casproject/handlers"
 	"github.com/janphilippgutt/casproject/internal/db"
@@ -21,6 +22,10 @@ func mustParse(name string, files ...string) *template.Template {
 }
 
 func main() {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found")
+	}
 
 	dbPool, err := db.Connect()
 	if err != nil {
