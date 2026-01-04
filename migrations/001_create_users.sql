@@ -1,0 +1,6 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL DEFAULT 'user',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
