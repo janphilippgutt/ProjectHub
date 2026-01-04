@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"log"
 	"net/http"
@@ -34,6 +35,15 @@ func main() {
 	defer dbPool.Close()
 
 	log.Println("database connected")
+
+	// TEMPORARY TEST
+	user, err := db.GetUserByEmail(context.Background(), dbPool, "admin@example.com")
+	if err != nil {
+		log.Fatal("query failed:", err)
+	}
+
+	log.Printf("loaded user: id=%d email=%s role=%s\n",
+		user.ID, user.Email, user.Role)
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
