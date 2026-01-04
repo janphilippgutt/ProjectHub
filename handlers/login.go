@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -85,7 +86,7 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 				return
 			}
 
-			tokenStore.Add(token, user.Email)
+			tokenStore.Add(token, user.Email, 15*time.Minute)
 
 			log.Println("Magic login link:")
 			log.Println("http://localhost:8080/magic-login?token=" + token)
