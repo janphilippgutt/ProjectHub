@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"html/template"
 	"log"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/janphilippgutt/casproject/handlers"
+	"github.com/janphilippgutt/casproject/internal/auth"
 	"github.com/janphilippgutt/casproject/internal/db"
 	"github.com/janphilippgutt/casproject/middleware"
 )
@@ -36,14 +36,7 @@ func main() {
 
 	log.Println("database connected")
 
-	// TEMPORARY TEST
-	user, err := db.GetUserByEmail(context.Background(), dbPool, "admin@example.com")
-	if err != nil {
-		log.Fatal("query failed:", err)
-	}
-
-	log.Printf("loaded user: id=%d email=%s role=%s\n",
-		user.ID, user.Email, user.Role)
+	tokenStore := auth.NewTokenStore()
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
@@ -73,8 +66,9 @@ func main() {
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
-	r.Get("/login", handlers.Login(tpls["login"], sessionManager, dbPool))
-	r.Post("/login", handlers.Login(tpls["login"], sessionManager, dbPool))
+	r.Get("/login", handlers.Login(tpls["login"], sessionManager, dbPool, tokenStore))
+	r.Post("/login", handlers.Login(tpls["login"], sessionManager, dbPool, tokenStore))
+	r.Get("/magic-login", handlers.MagicLogin(sessionManager, dbPool, tokenStore))
 	r.Get("/about", handlers.About(tpls["about"]))
 
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later

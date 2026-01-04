@@ -8,6 +8,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/janphilippgutt/casproject/internal/auth"
 	"github.com/janphilippgutt/casproject/internal/db"
 )
 
@@ -17,7 +18,7 @@ type LoginData struct {
 	Error string
 }
 
-func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool) http.HandlerFunc {
+func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, tokenStore *auth.TokenStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
@@ -77,24 +78,20 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool) h
 				return
 			}
 
-			// user exists -> set session values from DB
-			role := user.Role // comes from DB
-
-			// Store session values
-			sess.Put(r.Context(), "authenticated", true)
-			sess.Put(r.Context(), "email", email)
-			sess.Put(r.Context(), "role", role)
-
-			log.Printf("login: user=%s role=%s\n", user.Email, role)
-
-			// Redirect back to originally requested page if available
-			if next != "" {
-				http.Redirect(w, r, next, http.StatusSeeOther)
+			token, err := auth.GenerateToken(32)
+			if err != nil {
+				log.Println("token generation failed:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 
-			// Default fallback
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+			tokenStore.Add(token, user.Email)
+
+			log.Println("Magic login link:")
+			log.Println("http://localhost:8080/magic-login?token=" + token)
+
+			// Show confirmation instead of logging user in
+			w.Write([]byte("Check your email for the login link (see server log)."))
 			return
 
 		default:
