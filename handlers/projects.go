@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/google/uuid"
@@ -18,7 +19,11 @@ import (
 // Establish a struct, even if empty to have predictable templates that can later be filled with properties like
 // Error string
 // Title string
-type ProjectNewData struct{}
+type ProjectNewData struct {
+	Title       string
+	Description string
+	Error       string
+}
 
 type ProjectsPageData struct {
 	Projects []models.Project
@@ -33,6 +38,23 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 			return
 
 		case http.MethodPost:
+
+			title := strings.TrimSpace(r.FormValue("title"))
+			description := strings.TrimSpace(r.FormValue("description"))
+			authorEmail := sess.GetString(r.Context(), "email")
+
+			if title == "" || description == "" {
+				data := ProjectNewData{
+					Title:       title,
+					Description: description,
+					Error:       "Title and description are required",
+				}
+				if err := t.ExecuteTemplate(w, "project_new", data); err != nil {
+					log.Println("template execute error:", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				}
+				return
+			}
 
 			// Parse multipart form (max 10 MB)
 			if err := r.ParseMultipartForm(10 << 20); err != nil {
@@ -63,10 +85,6 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 
 				imagePath = "/uploads/projects/" + filename
 			}
-
-			title := r.FormValue("title")
-			description := r.FormValue("description")
-			authorEmail := sess.GetString(r.Context(), "email")
 
 			repoErr := repo.Create(r.Context(), title, description, imagePath, authorEmail)
 			if repoErr != nil {
