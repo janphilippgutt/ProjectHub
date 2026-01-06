@@ -82,11 +82,12 @@ func (r *ProjectRepository) Create(
 	ctx context.Context,
 	title string,
 	description string,
+	imagePath string,
 	authorEmail string,
 ) error {
 	_, err := r.DB.Exec(ctx, `
-		INSERT INTO projects (title, project_description, author_email, approved)
-		VALUES ($1, $2, $3, false)
+		INSERT INTO projects (title, project_description, image_path, author_email, approved)
+		VALUES ($1, $2, $3, $4, false)
 	`,
 		title,
 		description,

@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/google/uuid"
 	"github.com/janphilippgutt/casproject/internal/models"
 	"github.com/janphilippgutt/casproject/internal/repository"
 )
@@ -35,23 +40,37 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 				return
 			}
 
-			// Try to read the uploaded file
+			var imagePath string
+
 			file, header, err := r.FormFile("image")
-			if err != nil {
-				// Image is optional — this is OK
-				log.Println("no image uploaded")
-			} else {
+			if err == nil {
 				defer file.Close()
-				log.Println("uploaded file:", header.Filename, header.Size)
+
+				filename := generateImageFilename(header.Filename)
+				dstPath := filepath.Join("uploads", "projects", filename)
+
+				dst, err := os.Create(dstPath)
+				if err != nil {
+					http.Error(w, "Could not save image", http.StatusInternalServerError)
+					return
+				}
+				defer dst.Close()
+
+				if _, err := io.Copy(dst, file); err != nil {
+					http.Error(w, "Could not write image", http.StatusInternalServerError)
+					return
+				}
+
+				imagePath = "/uploads/projects/" + filename
 			}
 
 			title := r.FormValue("title")
 			description := r.FormValue("description")
 			authorEmail := sess.GetString(r.Context(), "email")
 
-			repoErr := repo.Create(r.Context(), title, description, authorEmail)
+			repoErr := repo.Create(r.Context(), title, description, imagePath, authorEmail)
 			if repoErr != nil {
-				log.Println("create project error:", err)
+				log.Println("create project error:", repoErr)
 				http.Error(w, "Failed to create project", http.StatusInternalServerError)
 				return
 			}
@@ -80,4 +99,9 @@ func ListProjects(t *template.Template, repo *repository.ProjectRepository) http
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 	}
+}
+
+func generateImageFilename(original string) string {
+	ext := filepath.Ext(original)
+	return fmt.Sprintf("%s%s", uuid.New().String(), ext)
 }
