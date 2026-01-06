@@ -95,3 +95,16 @@ func (r *ProjectRepository) Create(
 
 	return err
 }
+
+func (r *ProjectRepository) Approve(
+	ctx context.Context,
+	projectID int,
+) error {
+	_, err := r.DB.Exec(ctx, `
+		UPDATE projects
+		SET approved = true
+		WHERE id = $1
+	`, projectID)
+
+	return err
+}

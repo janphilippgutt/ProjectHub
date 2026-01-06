@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/janphilippgutt/casproject/internal/models"
 	"github.com/janphilippgutt/casproject/internal/repository"
 )
@@ -66,5 +68,26 @@ func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectReposi
 			log.Println("template execute error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
+	}
+}
+
+func ApproveProject(repo *repository.ProjectRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "id")
+
+		projectID, err := strconv.Atoi(idParam)
+		if err != nil {
+			http.Error(w, "Invalid project ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := repo.Approve(r.Context(), projectID); err != nil {
+			log.Println("approve project error:", err)
+			http.Error(w, "Failed to approve project", http.StatusInternalServerError)
+			return
+		}
+
+		// PRG pattern
+		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
 	}
 }
