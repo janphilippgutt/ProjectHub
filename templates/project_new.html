@@ -7,7 +7,7 @@
 {{ define "content" }}
 <h2>Create a new project</h2>
 
-<form method="post" action="/projects/new">
+<form method="post" action="/projects/new" enctype="multipart/form-data">
     <div>
         <label>Title</label><br>
         <input type="text" name="title" required>
@@ -16,6 +16,12 @@
     <div>
         <label>Description</label><br>
         <textarea name="description" required></textarea>
+    </div>
+    <div>
+        <label>
+            Image:
+            <input type="file" name="image">
+        </label>
     </div>
 
     <button type="submit">Create</button>
