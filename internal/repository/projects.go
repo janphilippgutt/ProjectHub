@@ -47,6 +47,37 @@ func (r *ProjectRepository) ListApproved(ctx context.Context) ([]models.Project,
 	return projects, rows.Err()
 }
 
+func (r *ProjectRepository) ListUnapproved(ctx context.Context) ([]models.Project, error) {
+	rows, err := r.DB.Query(ctx, `
+		SELECT id, title, project_description, image_path, author_email, approved, created_at
+		FROM projects
+		WHERE approved = false
+		ORDER BY created_at ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projects []models.Project
+	for rows.Next() {
+		var p models.Project
+		if err := rows.Scan(
+			&p.ID,
+			&p.Title,
+			&p.Description,
+			&p.ImagePath,
+			&p.AuthorEmail,
+			&p.Approved,
+			&p.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+	return projects, rows.Err()
+}
+
 func (r *ProjectRepository) Create(
 	ctx context.Context,
 	title string,

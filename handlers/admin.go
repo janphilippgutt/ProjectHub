@@ -7,10 +7,16 @@ import (
 	"net/url"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/janphilippgutt/casproject/internal/models"
+	"github.com/janphilippgutt/casproject/internal/repository"
 )
 
 type AdminData struct {
 	Email string
+}
+
+type AdminProjectsData struct {
+	Projects []models.Project
 }
 
 func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
@@ -41,6 +47,23 @@ func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 			// Do not attempt to write another header after partial write;
 			// ExecuteTemplate typically writes the whole body, but if it fails
 			// before writing anything the following error response is safe.
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}
+}
+
+func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		projects, err := repo.ListUnapproved(r.Context())
+		if err != nil {
+			log.Println("list unapproved projects error:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		data := AdminProjectsData{Projects: projects}
+		if err := t.ExecuteTemplate(w, "admin_projects", data); err != nil {
+			log.Println("template execute error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 	}

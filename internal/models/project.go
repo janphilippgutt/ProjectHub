@@ -6,7 +6,7 @@ type Project struct {
 	ID          int
 	Title       string
 	Description string
-	ImagePath   string
+	ImagePath   *string // pointer allows nil
 	AuthorEmail string
 	Approved    bool
 	CreatedAt   time.Time

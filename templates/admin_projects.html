@@ -1,0 +1,25 @@
+{{ define "admin_projects" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}Admin - Pending Projects{{ end }}
+
+{{ define "content" }}
+<h2>Pending Projects</h2>
+{{ if .Projects }}
+<ul>
+  {{ range .Projects }}
+  <li>
+    <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
+    {{ .Description }}<br>
+    {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="{{ .Title }}" style="max-width:200px;">{{ end }}
+    <form action="/admin/projects/{{ .ID }}/approve" method="post" style="display:inline">
+        <button type="submit">Approve</button>
+    </form>
+  </li>
+  {{ end }}
+</ul>
+{{ else }}
+<p>No pending projects.</p>
+{{ end }}
+{{ end }}

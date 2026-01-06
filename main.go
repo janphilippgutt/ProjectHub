@@ -49,12 +49,13 @@ func main() {
 
 	// parse per-page template sets (base + specific page)
 	tpls := map[string]*template.Template{
-		"home":        mustParse("home", "templates/base.html", "templates/home.html"),
-		"login":       mustParse("login", "templates/base.html", "templates/login.html"),
-		"about":       mustParse("about", "templates/base.html", "templates/about.html"),
-		"admin":       mustParse("admin", "templates/base.html", "templates/admin.html"),
-		"new_project": mustParse("new_project", "templates/base.html", "templates/project_new.html"),
-		"projects":    mustParse("projects", "templates/base.html", "templates/projects.html"),
+		"home":           mustParse("home", "templates/base.html", "templates/home.html"),
+		"login":          mustParse("login", "templates/base.html", "templates/login.html"),
+		"about":          mustParse("about", "templates/base.html", "templates/about.html"),
+		"admin":          mustParse("admin", "templates/base.html", "templates/admin.html"),
+		"new_project":    mustParse("new_project", "templates/base.html", "templates/project_new.html"),
+		"projects":       mustParse("projects", "templates/base.html", "templates/projects.html"),
+		"admin_projects": mustParse("admin_projects", "templates/base.html", "templates/admin_projects.html"),
 	}
 
 	r := chi.NewRouter()
@@ -73,6 +74,7 @@ func main() {
 	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
 	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
 	r.With(authMW).Post("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
+	r.With(authMW, requireAdmin).Get("/admin/projects", handlers.ListUnapprovedProjects(tpls["admin_projects"], projectRepo))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
