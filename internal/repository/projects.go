@@ -91,6 +91,7 @@ func (r *ProjectRepository) Create(
 	`,
 		title,
 		description,
+		imagePath,
 		authorEmail,
 	)
 

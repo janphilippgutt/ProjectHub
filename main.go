@@ -70,6 +70,10 @@ func main() {
 	// Create repository once
 	projectRepo := &repository.ProjectRepository{DB: dbPool}
 
+	// Create file server
+	fileServer := http.FileServer(http.Dir("./uploads"))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fileServer))
+
 	// use it for a route
 	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
 	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
@@ -88,3 +92,5 @@ func main() {
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
+
+// later add MIME validation, size limits, image type checks
