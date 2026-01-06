@@ -13,6 +13,7 @@ import (
 	"github.com/janphilippgutt/casproject/handlers"
 	"github.com/janphilippgutt/casproject/internal/auth"
 	"github.com/janphilippgutt/casproject/internal/db"
+	"github.com/janphilippgutt/casproject/internal/repository"
 	"github.com/janphilippgutt/casproject/middleware"
 )
 
@@ -53,6 +54,7 @@ func main() {
 		"about":       mustParse("about", "templates/base.html", "templates/about.html"),
 		"admin":       mustParse("admin", "templates/base.html", "templates/admin.html"),
 		"new_project": mustParse("new_project", "templates/base.html", "templates/project_new.html"),
+		"projects":    mustParse("projects", "templates/base.html", "templates/projects.html"),
 	}
 
 	r := chi.NewRouter()
@@ -64,9 +66,13 @@ func main() {
 	authMW := middleware.AuthRequired(sessionManager)
 	requireAdmin := middleware.RequireAdmin(sessionManager)
 
+	// Create repository once
+	projectRepo := &repository.ProjectRepository{DB: dbPool}
+
 	// use it for a route
 	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
-	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"]))
+	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
+	r.With(authMW).Post("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
@@ -74,6 +80,7 @@ func main() {
 	r.Post("/login", handlers.Login(tpls["login"], sessionManager, dbPool, tokenStore))
 	r.Get("/magic-login", handlers.MagicLogin(sessionManager, dbPool, tokenStore))
 	r.Get("/about", handlers.About(tpls["about"]))
+	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo))
 
 	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
 	log.Fatal(http.ListenAndServe(":8080", r))

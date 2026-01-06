@@ -1,0 +1,22 @@
+{{ define "projects" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}Projects{{ end }}
+
+{{ define "content" }}
+<h2>Public Projects</h2>
+{{ if .Projects }}
+<ul>
+    {{ range .Projects }}
+    <li>
+        <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
+        {{ .Description }}<br>
+        {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="{{ .Title }}" style="max-width:200px;">{{ end }}
+    </li>
+    {{ end }}
+</ul>
+{{ else }}
+<p>No approved projects yet.</p>
+{{ end }}
+{{ end }}
