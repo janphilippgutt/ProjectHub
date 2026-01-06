@@ -48,10 +48,11 @@ func main() {
 
 	// parse per-page template sets (base + specific page)
 	tpls := map[string]*template.Template{
-		"home":  mustParse("home", "templates/base.html", "templates/home.html"),
-		"login": mustParse("login", "templates/base.html", "templates/login.html"),
-		"about": mustParse("about", "templates/base.html", "templates/about.html"),
-		"admin": mustParse("admin", "templates/base.html", "templates/admin.html"),
+		"home":        mustParse("home", "templates/base.html", "templates/home.html"),
+		"login":       mustParse("login", "templates/base.html", "templates/login.html"),
+		"about":       mustParse("about", "templates/base.html", "templates/about.html"),
+		"admin":       mustParse("admin", "templates/base.html", "templates/admin.html"),
+		"new_project": mustParse("new_project", "templates/base.html", "templates/project_new.html"),
 	}
 
 	r := chi.NewRouter()
@@ -63,8 +64,9 @@ func main() {
 	authMW := middleware.AuthRequired(sessionManager)
 	requireAdmin := middleware.RequireAdmin(sessionManager)
 
-	// use it for a route (we will add /admin next)
+	// use it for a route
 	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
+	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"]))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
