@@ -46,6 +46,12 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 
 		case http.MethodPost:
 
+			r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
+				http.Error(w, "Could not parse form", http.StatusBadRequest)
+				return
+			}
+
 			title := strings.TrimSpace(r.FormValue("title"))
 			description := strings.TrimSpace(r.FormValue("description"))
 			authorEmail := sess.GetString(r.Context(), "email")
@@ -56,45 +62,62 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 				return
 			}
 
-			// Parse multipart form (max 10 MB)
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
-				http.Error(w, "Could not parse form", http.StatusBadRequest)
-				return
-			}
-
 			var imagePath string
-
 			file, header, err := r.FormFile("image")
-			if err == nil {
+			if err != nil {
+				if err == http.ErrMissingFile {
+					imagePath = "" // optional file not provided
+				} else {
+					log.Println("upload error:", err)
+					http.Error(w, "Invalid file upload", http.StatusBadRequest)
+					return
+				}
+			} else {
 				defer file.Close()
+				if header.Filename != "" {
+					buf := make([]byte, 512)
+					if _, err := file.Read(buf); err != nil {
+						http.Error(w, "Invalid file", http.StatusBadRequest)
+						return
+					}
 
-				filename := generateImageFilename(header.Filename)
-				dstPath := filepath.Join("uploads", "projects", filename)
+					contentType := http.DetectContentType(buf)
+					if contentType != "image/jpeg" && contentType != "image/png" {
+						http.Error(w, "Only JPEG and PNG allowed", http.StatusBadRequest)
+						return
+					}
 
-				dst, err := os.Create(dstPath)
-				if err != nil {
-					http.Error(w, "Could not save image", http.StatusInternalServerError)
-					return
+					if _, err := file.Seek(0, 0); err != nil {
+						http.Error(w, "Invalid file stream", http.StatusBadRequest)
+						return
+					}
+
+					filename := generateImageFilename(header.Filename)
+					dstPath := filepath.Join("uploads", "projects", filename)
+					dst, err := os.Create(dstPath)
+					if err != nil {
+						http.Error(w, "Could not save image", http.StatusInternalServerError)
+						return
+					}
+					defer dst.Close()
+
+					if _, err := io.Copy(dst, file); err != nil {
+						http.Error(w, "Could not write image", http.StatusInternalServerError)
+						return
+					}
+
+					imagePath = "/uploads/projects/" + filename
 				}
-				defer dst.Close()
-
-				if _, err := io.Copy(dst, file); err != nil {
-					http.Error(w, "Could not write image", http.StatusInternalServerError)
-					return
-				}
-
-				imagePath = "/uploads/projects/" + filename
 			}
 
-			repoErr := repo.Create(r.Context(), title, description, imagePath, authorEmail)
-			if repoErr != nil {
-				log.Println("create project error:", repoErr)
+			// Insert project
+			if err := repo.Create(r.Context(), title, description, imagePath, authorEmail); err != nil {
+				log.Println("create project error:", err)
 				http.Error(w, "Failed to create project", http.StatusInternalServerError)
 				return
 			}
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
 
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
