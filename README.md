@@ -66,7 +66,7 @@ It is designed as a production-oriented Go backend with a clean architecture, se
 - Docker & Docker Compose
 
 ### 1. Clone the repository
-`git clone https://github.com/yourusername/projecthub.git`
+`git clone https://github.com/janphilippgutt/ProjectHub.git`
 
 `cd projecthub`
 
