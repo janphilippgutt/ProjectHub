@@ -1,26 +1,29 @@
-{{ define "project_new" }}
-{{ template "base" . }}
-{{ end }}
-
 {{ define "title" }}New Project{{ end }}
 
 {{ define "content" }}
 <h2>Create a new project</h2>
 
+<!-- Show error message if present -->
+{{ if .Error }}
+<div style="color: red; font-weight: bold; margin-bottom: 1em;">
+    {{ .Error }}
+</div>
+{{ end }}
+
 <form method="post" action="/projects/new" enctype="multipart/form-data">
     <div>
         <label>Title</label><br>
-        <input type="text" name="title" required>
+        <input type="text" name="title" value="{{ .Title }}">
     </div>
 
     <div>
         <label>Description</label><br>
-        <textarea name="description" required></textarea>
+        <textarea name="description">{{ .Description  }}</textarea>
     </div>
     <div>
         <label>
             Image:
-            <input type="file" name="image">
+            <input type="file" name="image" accept="image/*">
         </label>
     </div>
 

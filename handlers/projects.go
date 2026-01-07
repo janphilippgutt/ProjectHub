@@ -34,7 +34,14 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 		switch r.Method {
 
 		case http.MethodGet:
-			t.ExecuteTemplate(w, "project_new", ProjectNewData{})
+			data := ProjectNewData{
+				// PopString reads and removes the message; empty string = no message = safe
+				Error: sess.PopString(r.Context(), "flash_error"),
+			}
+			if err := t.ExecuteTemplate(w, "base", data); err != nil {
+				log.Println("template execute error:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
 			return
 
 		case http.MethodPost:
@@ -44,15 +51,8 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 			authorEmail := sess.GetString(r.Context(), "email")
 
 			if title == "" || description == "" {
-				data := ProjectNewData{
-					Title:       title,
-					Description: description,
-					Error:       "Title and description are required",
-				}
-				if err := t.ExecuteTemplate(w, "project_new", data); err != nil {
-					log.Println("template execute error:", err)
-					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				}
+				sess.Put(r.Context(), "flash_error", "Title and description are required")
+				http.Redirect(w, r, "/projects/new", http.StatusSeeOther)
 				return
 			}
 
