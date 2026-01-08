@@ -3,7 +3,9 @@ package main
 import (
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -24,6 +26,11 @@ func mustParse(name string, files ...string) *template.Template {
 }
 
 func main() {
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
 
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found")
