@@ -96,8 +96,12 @@ func main() {
 	r.Get("/about", handlers.About(tpls["about"]))
 	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo))
 
-	log.Println("Server running on :8080") // log -> timestamps included, consistent logging style, logs can easily be redirected later
-	log.Fatal(http.ListenAndServe(":8080", r))
-}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-// later add MIME validation, size limits, image type checks
+	log.Println("Server running on :" + port)
+	log.Fatal(http.ListenAndServe(":"+port, r))
+
+}
