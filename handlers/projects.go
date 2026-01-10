@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -112,10 +113,22 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 
 			// Insert project
 			if err := repo.Create(r.Context(), title, description, imagePath, authorEmail); err != nil {
-				log.Println("create project error:", err)
+				slog.Error(
+					"create project failed",
+					"error", err,
+					"user", authorEmail,
+				)
 				http.Error(w, "Failed to create project", http.StatusInternalServerError)
 				return
 			}
+
+			slog.Info(
+				"project created",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"title", title,
+				"user", authorEmail,
+			)
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 

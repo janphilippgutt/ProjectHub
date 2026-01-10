@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -88,8 +89,13 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 
 			tokenStore.Add(token, user.Email, 15*time.Minute)
 
+			port := os.Getenv("PORT")
+			if port == "" {
+				port = "8080"
+			}
+
 			log.Println("Magic login link:")
-			log.Println("http://localhost:8080/magic-login?token=" + token)
+			log.Println("http://localhost:" + port + "/magic-login?token=" + token)
 
 			// Show confirmation instead of logging user in
 			w.Write([]byte("Check your email for the login link (see server log)."))
