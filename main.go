@@ -83,7 +83,7 @@ func main() {
 	r.Use(middleware.RequestID)
 
 	// Add request level logging with middleware
-	r.Use(middleware.RequestLogger)
+	r.Use(middleware.RequestLogger(sessionManager))
 
 	// Create middleware for authentication and authorization
 	authMW := middleware.AuthRequired(sessionManager)
