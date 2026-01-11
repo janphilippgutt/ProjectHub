@@ -20,13 +20,6 @@ func (r *statusRecorder) WriteHeader(code int) {
 func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// Skip noisy paths
-		if r.URL.Path == "/favicon.ico" ||
-			strings.HasPrefix(r.URL.Path, "/uploads/") {
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		start := time.Now()
 
 		rec := &statusRecorder{
@@ -37,15 +30,22 @@ func RequestLogger(next http.Handler) http.Handler {
 		// Call the next handler
 		next.ServeHTTP(rec, r)
 
-		duration := time.Since(start)
+		noisyPath :=
+			r.URL.Path == "/favicon.ico" ||
+				strings.HasPrefix(r.URL.Path, "/uploads/")
 
-		// Decide log level
 		level := slog.LevelInfo
+
 		if rec.status >= 500 {
 			level = slog.LevelError
 		} else if rec.status >= 400 {
 			level = slog.LevelWarn
+		} else if noisyPath {
+			// Successful noisy requests → don’t log
+			return
 		}
+
+		duration := time.Since(start)
 
 		slog.LogAttrs(
 			r.Context(),
