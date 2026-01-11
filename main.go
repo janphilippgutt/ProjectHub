@@ -27,16 +27,23 @@ func mustParse(name string, files ...string) *template.Template {
 
 func main() {
 
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found")
+	}
+
 	baseHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	})
 
-	logger := slog.New(middleware.NewContextHandler(baseHandler))
-	slog.SetDefault(logger)
+	handler := middleware.NewContextHandler(baseHandler)
 
-	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found")
-	}
+	logger := slog.New(handler).With(
+		slog.String("service", os.Getenv("APP_NAME")),
+		slog.String("env", os.Getenv("APP_ENV")),
+		slog.String("version", os.Getenv("APP_VERSION")),
+	)
+
+	slog.SetDefault(logger)
 
 	dbPool, err := db.Connect()
 	if err != nil {

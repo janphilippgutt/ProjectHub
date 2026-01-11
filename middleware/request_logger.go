@@ -3,6 +3,7 @@ package middleware
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -19,6 +20,13 @@ func (r *statusRecorder) WriteHeader(code int) {
 func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		// Skip noisy paths
+		if r.URL.Path == "/favicon.ico" ||
+			strings.HasPrefix(r.URL.Path, "/uploads/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		start := time.Now()
 
 		rec := &statusRecorder{
@@ -31,13 +39,11 @@ func RequestLogger(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		reqID := RequestIDFromContext(r.Context())
-
 		// Decide log level
 		level := slog.LevelInfo
 		if rec.status >= 500 {
 			level = slog.LevelError
-		} else if rec.status >= 400 && rec.status != http.StatusNotFound {
+		} else if rec.status >= 400 {
 			level = slog.LevelWarn
 		}
 
@@ -45,7 +51,6 @@ func RequestLogger(next http.Handler) http.Handler {
 			r.Context(),
 			level,
 			"request completed",
-			slog.String("request_id", reqID),
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
 			slog.Int("status", rec.status),
