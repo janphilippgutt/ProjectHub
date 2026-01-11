@@ -70,6 +70,9 @@ func main() {
 	// Wrap router with session manager middleware
 	r.Use(sessionManager.LoadAndSave)
 
+	// Add request level logging with middleware
+	r.Use(middleware.RequestLogger)
+
 	// create the middleware
 	authMW := middleware.AuthRequired(sessionManager)
 	requireAdmin := middleware.RequireAdmin(sessionManager)
