@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/janphilippgutt/casproject/internal/models"
 	"github.com/janphilippgutt/casproject/internal/repository"
+	"github.com/janphilippgutt/casproject/middleware"
 )
 
 // Establish a struct, even if empty to have predictable templates that can later be filled with properties like
@@ -122,12 +123,12 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 				return
 			}
 
-			slog.Info(
+			slog.InfoContext(
+				r.Context(),
 				"project created",
-				"method", r.Method,
-				"path", r.URL.Path,
-				"title", title,
-				"user", authorEmail,
+				slog.String("request_id", middleware.RequestIDFromContext(r.Context())),
+				slog.String("title", title),
+				slog.String("user", authorEmail),
 			)
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)

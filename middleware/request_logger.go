@@ -31,6 +31,8 @@ func RequestLogger(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
+		reqID := RequestIDFromContext(r.Context())
+
 		// Decide log level
 		level := slog.LevelInfo
 		if rec.status >= 500 {
@@ -39,14 +41,16 @@ func RequestLogger(next http.Handler) http.Handler {
 			level = slog.LevelWarn
 		}
 
-		slog.Log(
+		slog.LogAttrs(
 			r.Context(),
 			level,
 			"request completed",
-			"method", r.Method,
-			"path", r.URL.Path,
-			"status", rec.status,
-			"duration_ms", duration.Milliseconds(),
+			slog.String("request_id", reqID),
+			slog.String("method", r.Method),
+			slog.String("path", r.URL.Path),
+			slog.Int("status", rec.status),
+			slog.Int64("duration_ms", duration.Milliseconds()),
 		)
+
 	})
 }
