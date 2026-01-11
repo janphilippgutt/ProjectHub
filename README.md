@@ -3,6 +3,8 @@ ProjectHub is a backend-driven web application that allows authenticated users t
 
 It is designed as a production-oriented Go backend with a clean architecture, secure file handling, and a moderation workflow.
 
+**Observability Focus:** The application implements structured logging from the start. See more about the approach in the "Structured Logging & Observability" section. 
+
 ## Features
 - User authentication (session-based)
 
@@ -59,6 +61,13 @@ It is designed as a production-oriented Go backend with a clean architecture, se
 
 - Middleware handles cross-cutting concerns
 
+## Structured Logging & Observability
+
+The application implements structured, JSON-based logging using Go’s `slog` package.
+Each incoming HTTP request is assigned a unique `request_id` and logged consistently across middleware and handlers, enabling reliable request tracing and correlation.
+Logs include contextual metadata such as service name, environment, version, HTTP method, path, status code, duration, and authenticated user where applicable.
+This design prepares the application for production-grade observability pipelines (e.g. ingestion via Filebeat into OpenSearch/Elastic) and enables efficient filtering, debugging, and monitoring at scale.
+
 ## Getting Started (Local Development)
 ### Prerequisites
 - Go 1.22+
@@ -84,7 +93,7 @@ Edit `.env` with your local configuration.
 ### 5. Run the application
 `go run main.go`
 
-Visit: http://localhost:8080
+Visit: http://localhost:8080 (or the port you specified in .env respectively)
 
 ## Security Considerations
 - Environment variables are used for all secrets
