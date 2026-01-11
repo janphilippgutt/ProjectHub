@@ -16,6 +16,10 @@ func RequestID(next http.Handler) http.Handler {
 		id := uuid.New().String()
 
 		ctx := context.WithValue(r.Context(), requestIDKey, id)
+		ctx = WithLogAttrs(ctx,
+			"request_id", id,
+		)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

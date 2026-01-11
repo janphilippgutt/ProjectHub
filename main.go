@@ -27,9 +27,11 @@ func mustParse(name string, files ...string) *template.Template {
 
 func main() {
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	baseHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
-	}))
+	})
+
+	logger := slog.New(middleware.NewContextHandler(baseHandler))
 	slog.SetDefault(logger)
 
 	if err := godotenv.Load(); err != nil {
