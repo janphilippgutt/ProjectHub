@@ -51,10 +51,10 @@ func RequestLogger(next http.Handler) http.Handler {
 			r.Context(),
 			level,
 			"request completed",
-			slog.String("method", r.Method),
-			slog.String("path", r.URL.Path),
-			slog.Int("status", rec.status),
-			slog.Int64("duration_ms", duration.Milliseconds()),
+			slog.String("http.method", r.Method),
+			slog.String("url.path", r.URL.Path),
+			slog.Int("http.status_code", rec.status),
+			slog.Int64("event.duration_ms", duration.Milliseconds()),
 		)
 
 	})
