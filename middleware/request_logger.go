@@ -35,7 +35,7 @@ func RequestLogger(next http.Handler) http.Handler {
 		level := slog.LevelInfo
 		if rec.status >= 500 {
 			level = slog.LevelError
-		} else if rec.status >= 400 {
+		} else if rec.status >= 400 && rec.status != http.StatusNotFound {
 			level = slog.LevelWarn
 		}
 
