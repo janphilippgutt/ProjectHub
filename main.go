@@ -31,7 +31,16 @@ func main() {
 		log.Println("no .env file found")
 	}
 
-	baseHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	logFile, err := os.OpenFile(
+		"logs/app.log",
+		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
+		0644,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	baseHandler := slog.NewJSONHandler(logFile, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	})
 
