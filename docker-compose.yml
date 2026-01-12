@@ -12,13 +12,28 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   opensearch:
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:2.19.4
+    container_name: cas_opensearch
     environment:
       - discovery.type=single-node
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
       - plugins.security.disabled=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=admin123!Admin123!
     ports:
       - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+  fluent-bit:
+    image: fluent/fluent-bit:2.2
+    container_name: cas_fluentbit
+    depends_on:
+      - opensearch
+    volumes:
+      - ./logs:/logs:ro
+      - ./ops/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./ops/parsers.conf:/fluent-bit/etc/parsers.conf:ro
 
 volumes:
   pgdata:
+  opensearch_data:
