@@ -3,6 +3,8 @@ package middleware
 import (
 	"context"
 	"log/slog"
+	"strings"
+	"time"
 )
 
 type ContextHandler struct {
@@ -23,6 +25,10 @@ func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 	if reqID != "" {
 		r.AddAttrs(slog.String("request_id", reqID))
 	}
+
+	r.AddAttrs(slog.Time("@timestamp", time.Now().UTC()))
+
+	r.AddAttrs(slog.String("log.level", strings.ToLower(r.Level.String())))
 
 	return h.handler.Handle(ctx, r)
 }

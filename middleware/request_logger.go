@@ -48,6 +48,12 @@ func RequestLogger(sess *scs.SessionManager) func(next http.Handler) http.Handle
 				return
 			}
 
+			outcome := "success"
+
+			if rec.status >= 400 {
+				outcome = "failure"
+			}
+
 			duration := time.Since(start)
 
 			userID := sess.GetString(r.Context(), "email") // optional
@@ -61,6 +67,7 @@ func RequestLogger(sess *scs.SessionManager) func(next http.Handler) http.Handle
 				slog.String("http.method", r.Method),
 				slog.String("url.path", r.URL.Path),
 				slog.Int("http.status_code", rec.status),
+				slog.String("event.outcome", outcome),
 				slog.Int64("event.duration_ms", duration.Milliseconds()),
 				slog.String("user.id", userID), // optional
 			)
