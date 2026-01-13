@@ -3,13 +3,37 @@ services:
     image: postgres:16
     container_name: cas_postgres
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
-      POSTGRES_USER: cas
-      POSTGRES_PASSWORD: caspassword
-      POSTGRES_DB: casdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  opensearch:
+    image: opensearchproject/opensearch:2.19.4
+    container_name: cas_opensearch
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - plugins.security.disabled=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=admin123!Admin123!
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+  fluent-bit:
+    image: fluent/fluent-bit:2.2
+    container_name: cas_fluentbit
+    depends_on:
+      - opensearch
+    volumes:
+      - ./logs:/logs:ro
+      - ./ops/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./ops/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+
 volumes:
   pgdata:
+  opensearch_data:

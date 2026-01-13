@@ -1,3 +1,4 @@
 .env
 memo.txt
 uploads/projects/*
+*app.log

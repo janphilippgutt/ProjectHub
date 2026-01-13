@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -67,7 +68,16 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 			if err != nil {
 				// If no rows, show friendly error. For any other DB error, log and show generic error.
 				// pgx returns pgx.ErrNoRows for not found (use errors.Is check if needed).
-				log.Println("user lookup error:", err)
+
+				slog.LogAttrs(
+					r.Context(),
+					slog.LevelWarn,
+					"login failed: user not found",
+					slog.String("event.category", "auth"),
+					slog.String("event.type", "fail"),
+					slog.String("user.id", email),
+				)
+
 				data := LoginData{
 					Email: email,
 					Next:  next,
@@ -82,7 +92,17 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 
 			token, err := auth.GenerateToken(32)
 			if err != nil {
-				log.Println("token generation failed:", err)
+
+				slog.LogAttrs(
+					r.Context(),
+					slog.LevelError,
+					"login failed: token generation error",
+					slog.String("event.category", "auth"),
+					slog.String("event.type", "error"),
+					slog.String("user.id", user.Email),
+					slog.Any("error", err),
+				)
+
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
@@ -94,8 +114,18 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 				port = "8080"
 			}
 
+			// dev: print login link to terminal. In production send per email instead.
 			log.Println("Magic login link:")
 			log.Println("http://localhost:" + port + "/magic-login?token=" + token)
+
+			slog.LogAttrs(
+				r.Context(),
+				slog.LevelInfo,
+				"magic login link issued",
+				slog.String("event.category", "auth"),
+				slog.String("event.type", "login"),
+				slog.String("user.id", user.Email),
+			)
 
 			// Show confirmation instead of logging user in
 			w.Write([]byte("Check your email for the login link (see server log)."))
