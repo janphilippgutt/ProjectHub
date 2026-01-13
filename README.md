@@ -66,6 +66,8 @@ It is designed as a production-oriented Go backend with a clean architecture, se
 The application implements structured, JSON-based logging using Go’s `slog` package.
 Each incoming HTTP request is assigned a unique `request_id` and logged consistently across middleware and handlers, enabling reliable request tracing and correlation.
 Logs include contextual metadata such as service name, environment, version, HTTP method, path, status code, duration, and authenticated user where applicable.
+Application logs are written to disk and shipped via a lightweight log forwarder into OpenSearch, where they can be explored and visualized using OpenSearch Dashboards. 
+
 This design prepares the application for production-grade observability pipelines (e.g. ingestion via Filebeat into OpenSearch/Elastic) and enables efficient filtering, debugging, and monitoring at scale.
 
 ## Getting Started (Local Development)
