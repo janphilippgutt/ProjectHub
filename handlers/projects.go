@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/janphilippgutt/casproject/internal/models"
 	"github.com/janphilippgutt/casproject/internal/repository"
@@ -153,6 +155,37 @@ func ListProjects(t *template.Template, repo *repository.ProjectRepository) http
 			log.Println("template execute error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
+	}
+}
+
+func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid project ID", http.StatusBadRequest)
+			return
+		}
+
+		err = repo.SoftDelete(ctx, id)
+		if err != nil {
+			http.Error(w, "Could not delete project", http.StatusInternalServerError)
+			return
+		}
+
+		userID := sess.GetString(ctx, "user_email")
+
+		slog.Info(
+			"project deleted",
+			"event.category", "admin",
+			"event.type", "delete",
+			"user.id", userID,
+			"project.id", id,
+		)
+
+		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
 	}
 }
 

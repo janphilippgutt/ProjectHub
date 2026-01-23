@@ -4,6 +4,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/janphilippgutt/casproject/internal/models"
@@ -18,6 +19,7 @@ func (r *ProjectRepository) ListApproved(ctx context.Context) ([]models.Project,
 		SELECT id, title, project_description, image_path, author_email, approved, created_at
 		FROM projects
 		WHERE approved = true
+		AND deleted_at IS NULL
 		ORDER BY created_at DESC
 	`)
 	if err != nil {
@@ -52,6 +54,7 @@ func (r *ProjectRepository) ListUnapproved(ctx context.Context) ([]models.Projec
 		SELECT id, title, project_description, image_path, author_email, approved, created_at
 		FROM projects
 		WHERE approved = false
+		AND deleted_at IS NULL
 		ORDER BY created_at ASC
 	`)
 	if err != nil {
@@ -109,4 +112,23 @@ func (r *ProjectRepository) Approve(
 	`, projectID)
 
 	return err
+}
+
+func (r *ProjectRepository) SoftDelete(ctx context.Context, projectID int) error {
+	query := `
+		UPDATE projects
+		SET deleted_at = NOW()
+		WHERE id = $1
+		AND deleted_at IS NULL
+	`
+	cmd, err := r.DB.Exec(ctx, query, projectID)
+	if err != nil {
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return errors.New("project not found or already deleted")
+	}
+
+	return nil
 }

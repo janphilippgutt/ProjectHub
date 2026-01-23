@@ -16,6 +16,10 @@
     <form action="/admin/projects/{{ .ID }}/approve" method="post" style="display:inline">
         <button type="submit">Approve</button>
     </form>
+    <form method="POST" action="/admin/projects/{{.ID}}/delete"
+      onsubmit="return confirm('Delete this project?');">
+        <button class="text-red-600 hover:underline">Delete</button>
+    </form>
   </li>
   {{ end }}
 </ul>

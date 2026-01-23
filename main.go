@@ -111,6 +111,7 @@ func main() {
 	r.With(authMW).Post("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Get("/admin/projects", handlers.ListUnapprovedProjects(tpls["admin_projects"], projectRepo))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/approve", handlers.ApproveProject(projectRepo))
+	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete", handlers.DeleteProject(projectRepo, sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
