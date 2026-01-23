@@ -114,6 +114,25 @@ func (r *ProjectRepository) Approve(
 	return err
 }
 
+func (r *ProjectRepository) Unapprove(ctx context.Context, projectID int) error {
+	query := `
+		UPDATE projects
+		SET approved = false
+		WHERE id = $1
+		AND deleted_at IS NULL
+	`
+	cmd, err := r.DB.Exec(ctx, query, projectID)
+	if err != nil {
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return errors.New("project not found or deleted")
+	}
+
+	return nil
+}
+
 func (r *ProjectRepository) SoftDelete(ctx context.Context, projectID int) error {
 	query := `
 		UPDATE projects

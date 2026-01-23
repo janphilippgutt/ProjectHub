@@ -158,6 +158,35 @@ func ListProjects(t *template.Template, repo *repository.ProjectRepository) http
 	}
 }
 
+func UnapproveProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid project ID", http.StatusBadRequest)
+			return
+		}
+
+		err = repo.Unapprove(ctx, id)
+		if err != nil {
+			http.Error(w, "Could not unapprove project", http.StatusInternalServerError)
+			return
+		}
+
+		userID := sess.GetString(ctx, "user_email")
+		slog.Info(
+			"project unapproved",
+			"event.category", "admin",
+			"event.type", "unapprove",
+			"user.id", userID,
+			"project.id", id,
+		)
+
+		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
+	}
+}
+
 func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

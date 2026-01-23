@@ -18,7 +18,8 @@ type AdminData struct {
 }
 
 type AdminProjectsData struct {
-	Projects []models.Project
+	Pending  []models.Project
+	Approved []models.Project
 }
 
 func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
@@ -56,14 +57,25 @@ func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 
 func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		projects, err := repo.ListUnapproved(r.Context())
+		pending, err := repo.ListUnapproved(r.Context())
 		if err != nil {
 			log.Println("list unapproved projects error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		data := AdminProjectsData{Projects: projects}
+		approved, err := repo.ListApproved(r.Context())
+		if err != nil {
+			log.Println("list approved projects error:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		data := AdminProjectsData{
+			Pending:  pending,
+			Approved: approved,
+		}
+
 		if err := t.ExecuteTemplate(w, "admin_projects", data); err != nil {
 			log.Println("template execute error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

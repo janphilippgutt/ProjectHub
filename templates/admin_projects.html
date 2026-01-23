@@ -2,20 +2,23 @@
 {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}Admin - Pending Projects{{ end }}
+{{ define "title" }}Admin – Projects{{ end }}
 
 {{ define "content" }}
+
 <h2>Pending Projects</h2>
-{{ if .Projects }}
+{{ if .Pending }}
 <ul>
-  {{ range .Projects }}
+  {{ range .Pending }}
   <li>
     <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
     {{ .Description }}<br>
     {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="{{ .Title }}" style="max-width:200px;">{{ end }}
+
     <form action="/admin/projects/{{ .ID }}/approve" method="post" style="display:inline">
         <button type="submit">Approve</button>
     </form>
+
     <form method="POST" action="/admin/projects/{{.ID}}/delete"
       onsubmit="return confirm('Delete this project?');">
         <button class="text-red-600 hover:underline">Delete</button>
@@ -26,4 +29,31 @@
 {{ else }}
 <p>No pending projects.</p>
 {{ end }}
+
+<hr>
+
+<h2>Approved Projects</h2>
+
+{{ if .Approved }}
+<ul>
+  {{ range .Approved }}
+  <li>
+    <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
+
+    <form method="POST" action="/admin/projects/{{.ID}}/unapprove"
+          onsubmit="return confirm('Move back to pending?');">
+      <button class="text-yellow-600">Unapprove</button>
+    </form>
+
+    <form method="POST" action="/admin/projects/{{.ID}}/delete"
+          onsubmit="return confirm('Delete this project?');">
+      <button class="text-red-600">Delete</button>
+    </form>
+  </li>
+  {{ end }}
+</ul>
+{{ else }}
+<p>No approved projects.</p>
+{{ end }}
+
 {{ end }}
