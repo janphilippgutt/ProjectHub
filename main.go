@@ -81,6 +81,7 @@ func main() {
 		"new_project":    mustParse("new_project", "templates/base.html", "templates/project_new.html"),
 		"projects":       mustParse("projects", "templates/base.html", "templates/projects.html"),
 		"admin_projects": mustParse("admin_projects", "templates/base.html", "templates/admin_projects.html"),
+		"project_detail": mustParse("project_detail", "templates/base.html", "templates/project_detail.html"),
 	}
 
 	r := chi.NewRouter()
@@ -121,6 +122,7 @@ func main() {
 	r.Get("/magic-login", handlers.MagicLogin(sessionManager, dbPool, tokenStore))
 	r.Get("/about", handlers.About(tpls["about"]))
 	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo))
+	r.Get("/projects/{id}", handlers.ProjectDetail(tpls["project_detail"], projectRepo))
 
 	port := os.Getenv("PORT")
 	if port == "" {

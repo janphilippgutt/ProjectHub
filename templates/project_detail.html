@@ -1,0 +1,28 @@
+{{ define "project_detail" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ .Project.Title }}{{ end }}
+
+{{ define "content" }}
+
+<article>
+  <h1>{{ .Project.Title }}</h1>
+
+  {{ if .Project.ImagePath }}
+    <img src="{{ .Project.ImagePath }}"
+         alt="{{ .Project.Title }}"
+         style="max-width:100%; margin-bottom:1rem;">
+  {{ end }}
+
+  <p>{{ .Project.Description }}</p>
+
+  <hr>
+
+  <p class="text-sm text-gray-600">
+    Submitted by {{ .Project.AuthorEmail }} ·
+    {{ .Project.CreatedAt.Format "02 Jan 2006" }}
+  </p>
+</article>
+
+{{ end }}

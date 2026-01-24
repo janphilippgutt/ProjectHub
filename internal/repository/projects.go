@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/janphilippgutt/casproject/internal/models"
 )
@@ -150,4 +151,37 @@ func (r *ProjectRepository) SoftDelete(ctx context.Context, projectID int) error
 	}
 
 	return nil
+}
+
+func (r *ProjectRepository) GetApprovedByID(
+	ctx context.Context,
+	id int,
+) (*models.Project, error) {
+
+	var p models.Project
+
+	err := r.DB.QueryRow(ctx, `
+		SELECT id, title, project_description, image_path,
+		       author_email, created_at
+		FROM projects
+		WHERE id = $1
+		  AND approved = true
+		  AND deleted_at IS NULL
+	`, id).Scan(
+		&p.ID,
+		&p.Title,
+		&p.Description,
+		&p.ImagePath,
+		&p.AuthorEmail,
+		&p.CreatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // important
+		}
+		return nil, err
+	}
+
+	return &p, nil
 }

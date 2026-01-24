@@ -33,6 +33,10 @@ type ProjectsPageData struct {
 	Projects []models.Project
 }
 
+type ProjectDetailPageData struct {
+	Project *models.Project
+}
+
 func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -215,6 +219,41 @@ func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager)
 		)
 
 		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
+	}
+}
+
+func ProjectDetail(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		project, err := repo.GetApprovedByID(ctx, id)
+		if err != nil {
+			log.Println("get project error:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		if project == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		data := ProjectDetailPageData{
+			Project: project,
+		}
+
+		if err := t.ExecuteTemplate(w, "project_detail", data); err != nil {
+			log.Println("template execute error:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
 	}
 }
 
