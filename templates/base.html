@@ -12,6 +12,38 @@
         <h1>My Cas App</h1>
     </header>
 
+    <nav class="border-b bg-white">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex h-16 items-center justify-between">
+
+      <!-- Left: Brand / Main nav -->
+      <div class="flex items-center space-x-6">
+        <a href="/projects" class="text-lg font-semibold text-gray-900">
+          CAS Projects
+        </a>
+
+        <a href="/projects" class="text-sm text-gray-600 hover:text-gray-900">
+          Projects
+        </a>
+      </div>
+
+      <!-- Right: Auth links -->
+      <div class="flex items-center space-x-4">
+        <a href="/login" class="text-sm text-gray-600 hover:text-gray-900">
+          Login
+        </a>
+
+        <a href="/admin/projects"
+           class="text-sm font-medium text-blue-600 hover:text-blue-800">
+          Admin
+        </a>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+
     <main class="max-w-5xl mx-auto px-4 py-6">
         {{ block "content" . }}{{ end }}
     </main>
