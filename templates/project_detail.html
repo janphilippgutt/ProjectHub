@@ -5,28 +5,36 @@
 {{ define "title" }}{{ .Project.Title }}{{ end }}
 
 {{ define "content" }}
+<div class="max-w-3xl mx-auto space-y-6">
 
-<p>
-  <a href="/projects">← Back to projects</a>
-</p>
+  <!-- Back link -->
+  <a href="/projects" class="text-sm text-gray-500 hover:text-gray-700">
+    ← Back to projects
+  </a>
 
-<article>
-  <h1>{{ .Project.Title }}</h1>
+  <!-- Title -->
+  <h1 class="text-3xl font-bold">
+    {{ .Project.Title }}
+  </h1>
 
+  <!-- Image -->
   {{ if .Project.ImagePath }}
-    <img src="{{ .Project.ImagePath }}"
-         alt="{{ .Project.Title }}"
-         style="max-width:100%; margin-bottom:1rem;">
+  <img
+    src="{{ .Project.ImagePath }}"
+    alt="{{ .Project.Title }}"
+    class="w-full rounded-lg border object-cover"
+  >
   {{ end }}
 
-  <p>{{ .Project.Description }}</p>
+  <!-- Description -->
+  <div class="prose max-w-none">
+    <p>{{ .Project.Description }}</p>
+  </div>
 
-  <hr>
-
-  <p class="text-sm text-gray-600">
-    Submitted by {{ .Project.AuthorEmail }} ·
-    {{ .Project.CreatedAt.Format "02 Jan 2006" }}
+  <!-- Meta -->
+  <p class="text-sm text-gray-500">
+    Submitted by {{ .Project.AuthorEmail }}
   </p>
-</article>
 
+</div>
 {{ end }}
