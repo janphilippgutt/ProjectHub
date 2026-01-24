@@ -5,20 +5,30 @@
 {{ define "title" }}Projects{{ end }}
 
 {{ define "content" }}
-<h2>Public Projects</h2>
+<h2 class="mb-4 text-xl font-semibold">Public Projects</h2>
+
 {{ if .Projects }}
-<ul>
-    {{ range .Projects }}
-    <li>
-        <a href="/projects/{{ .ID }}">
-            <strong>{{ .Title }}</strong>
-        </a> by {{ .AuthorEmail }}<br>
-        {{ .Description }}<br>
-        {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="{{ .Title }}" style="max-width:200px;">{{ end }}
-    </li>
-    {{ end }}
-</ul>
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {{ range .Projects }}
+  <a href="/projects/{{ .ID }}" class="block hover:shadow-md hover:-translate-y-0.5 transition">
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+
+      {{ if .ImagePath }}
+      <img src="{{ .ImagePath }}" class="h-48 w-full object-cover" alt="{{ .Title }}">
+      {{ end }}
+
+      <div class="p-4 space-y-2">
+        <h3 class="text-lg font-semibold">{{ .Title }}</h3>
+        <p class="text-sm text-gray-600">{{ .Description }}</p>
+        <p class="text-xs text-gray-400">Submitted by {{ .AuthorEmail }}</p>
+      </div>
+
+    </div>
+  </a>
+  {{ end }}
+</div>
 {{ else }}
 <p>No approved projects yet.</p>
 {{ end }}
+
 {{ end }}
