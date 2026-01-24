@@ -6,52 +6,86 @@
 
 {{ define "content" }}
 
-<h2>Pending Projects</h2>
+<h2 class="mb-4 text-xl font-semibold">Pending Projects</h2>
+
 {{ if .Pending }}
-<ul>
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
   {{ range .Pending }}
-  <li>
-    <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
-    {{ .Description }}<br>
-    {{ if .ImagePath }}<img src="{{ .ImagePath }}" alt="{{ .Title }}" style="max-width:200px;">{{ end }}
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
 
-    <form action="/admin/projects/{{ .ID }}/approve" method="post" style="display:inline">
-        <button type="submit">Approve</button>
-    </form>
+    {{ if .ImagePath }}
+    <img src="{{ .ImagePath }}" class="h-48 w-full object-cover" alt="{{ .Title }}">
+    {{ end }}
 
-    <form method="POST" action="/admin/projects/{{.ID}}/delete"
-      onsubmit="return confirm('Delete this project?');">
-        <button class="text-red-600 hover:underline">Delete</button>
-    </form>
-  </li>
+    <div class="p-4 space-y-2">
+      <h3 class="text-lg font-semibold">{{ .Title }}</h3>
+      <p class="text-sm text-gray-600">{{ .Description }}</p>
+      <p class="text-xs text-gray-400">Submitted by {{ .AuthorEmail }}</p>
+    </div>
+
+    <!-- Admin actions -->
+    <div class="flex gap-2 border-t p-3 bg-gray-50">
+      <form action="/admin/projects/{{ .ID }}/approve" method="post">
+        <button class="text-sm text-green-600 hover:underline">
+          Approve
+        </button>
+      </form>
+
+      <form action="/admin/projects/{{ .ID }}/delete" method="post"
+            onsubmit="return confirm('Delete this project?');">
+        <button class="text-sm text-red-600 hover:underline">
+          Delete
+        </button>
+      </form>
+    </div>
+
+  </div>
   {{ end }}
-</ul>
+</div>
 {{ else }}
 <p>No pending projects.</p>
 {{ end }}
 
+
 <hr>
 
-<h2>Approved Projects</h2>
+<h2 class="mt-10 mb-4 text-xl font-semibold">Approved Projects</h2>
 
 {{ if .Approved }}
-<ul>
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
   {{ range .Approved }}
-  <li>
-    <strong>{{ .Title }}</strong> by {{ .AuthorEmail }}<br>
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
 
-    <form method="POST" action="/admin/projects/{{.ID}}/unapprove"
-          onsubmit="return confirm('Move back to pending?');">
-      <button class="text-yellow-600">Unapprove</button>
-    </form>
+    {{ if .ImagePath }}
+    <img src="{{ .ImagePath }}" class="h-48 w-full object-cover" alt="{{ .Title }}">
+    {{ end }}
 
-    <form method="POST" action="/admin/projects/{{.ID}}/delete"
-          onsubmit="return confirm('Delete this project?');">
-      <button class="text-red-600">Delete</button>
-    </form>
-  </li>
+    <div class="p-4 space-y-2">
+      <h3 class="text-lg font-semibold">{{ .Title }}</h3>
+      <p class="text-sm text-gray-600">{{ .Description }}</p>
+      <p class="text-xs text-gray-400">Submitted by {{ .AuthorEmail }}</p>
+    </div>
+
+    <!-- Admin actions -->
+    <div class="flex gap-2 border-t p-3 bg-gray-50">
+      <form action="/admin/projects/{{ .ID }}/unapprove" method="post"
+            onsubmit="return confirm('Move back to pending?');">
+        <button class="text-sm text-yellow-600 hover:underline">
+          Unapprove
+        </button>
+      </form>
+
+      <form action="/admin/projects/{{ .ID }}/delete" method="post"
+            onsubmit="return confirm('Delete this project?');">
+        <button class="text-sm text-red-600 hover:underline">
+          Delete
+        </button>
+      </form>
+    </div>
+
+  </div>
   {{ end }}
-</ul>
+</div>
 {{ else }}
 <p>No approved projects.</p>
 {{ end }}
