@@ -18,7 +18,12 @@
 
     <div>
         <label>Description</label><br>
-        <textarea name="description">{{ .Description  }}</textarea>
+        <textarea name="description" maxlength="1000" rows="8" class="w-full border rounded p-2" required>{{ .Description  }}</textarea>
+
+        <p class="text-xs text-gray-400">
+        Max 1000 characters
+        </p>
+
     </div>
     <div>
         <label>

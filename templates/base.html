@@ -5,10 +5,11 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>{{ block "title" . }}My App{{ end }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
 </head>
 
-<body class="bg-emerald-600 min-h-screen p-3 sm:p-4">
+<!-- p-3 sm:p-x thickness of frame -->
+<body class="bg-emerald-600 min-h-screen p-3 sm:p-6">
   <div class="bg-gray-50 rounded-2xl min-h-full shadow-lg overflow-hidden">
 
     <header>

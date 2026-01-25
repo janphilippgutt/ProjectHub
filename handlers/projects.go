@@ -62,6 +62,22 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 
 			title := strings.TrimSpace(r.FormValue("title"))
 			description := strings.TrimSpace(r.FormValue("description"))
+			if len(description) == 0 {
+				http.Error(w, "Description is required", http.StatusBadRequest)
+				return
+			}
+			if len(description) > 1000 {
+				http.Error(w, "Description must be at most 800 characters", http.StatusBadRequest)
+
+				slog.Warn(
+					"project description too long",
+					"event.category", "validation",
+					"field", "description",
+					"length", len(description),
+				)
+
+				return
+			}
 			authorEmail := sess.GetString(r.Context(), "email")
 
 			if title == "" || description == "" {
