@@ -33,14 +33,23 @@
 
       <!-- Right: Auth links -->
       <div class="flex items-center space-x-4">
-        <a href="/login" class="text-sm text-gray-600 hover:text-gray-900">
-          Login
-        </a>
+{{ if .IsAuthenticated }}
+<form method="POST" action="/logout" class="inline">
+  <button class="text-sm text-gray-700 hover:underline">Logout</button>
+</form>
+{{ else }}
+<a href="/login" class="text-sm text-gray-600 hover:text-gray-900">
+  Login
+</a>
+{{ end }}
 
-        <a href="/admin/projects"
-           class="text-sm font-medium text-blue-600 hover:text-blue-800">
-          Admin
-        </a>
+{{ if .IsAdmin }}
+<a href="/admin/projects"
+   class="text-sm font-medium text-blue-600 hover:text-blue-800">
+  Admin
+</a>
+{{ end }}
+
       </div>
 
     </div>

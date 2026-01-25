@@ -14,10 +14,12 @@ import (
 )
 
 type AdminData struct {
+	BasePageData
 	Email string
 }
 
 type AdminProjectsData struct {
+	BasePageData
 	Pending  []models.Project
 	Approved []models.Project
 }
@@ -44,7 +46,10 @@ func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 		// At this point, the user is authenticated and authorized.
 		email := sess.GetString(r.Context(), "email")
 
-		data := AdminData{Email: email}
+		data := AdminData{
+			BasePageData: NewBaseData(r.Context(), sess),
+			Email:        email,
+		}
 		if err := t.ExecuteTemplate(w, "admin", data); err != nil {
 			log.Println("admin template error:", err)
 			// Do not attempt to write another header after partial write;
@@ -55,7 +60,7 @@ func Admin(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 	}
 }
 
-func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
+func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pending, err := repo.ListUnapproved(r.Context())
 		if err != nil {
@@ -72,8 +77,9 @@ func ListUnapprovedProjects(t *template.Template, repo *repository.ProjectReposi
 		}
 
 		data := AdminProjectsData{
-			Pending:  pending,
-			Approved: approved,
+			BasePageData: NewBaseData(r.Context(), sess),
+			Pending:      pending,
+			Approved:     approved,
 		}
 
 		if err := t.ExecuteTemplate(w, "admin_projects", data); err != nil {

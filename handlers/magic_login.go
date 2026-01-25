@@ -37,7 +37,7 @@ func MagicLogin(
 		}
 
 		sess.Put(r.Context(), "authenticated", true)
-		sess.Put(r.Context(), "email", user.Email)
+		sess.Put(r.Context(), "user_email", user.Email)
 		sess.Put(r.Context(), "role", user.Role)
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)

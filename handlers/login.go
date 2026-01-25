@@ -16,6 +16,7 @@ import (
 )
 
 type LoginData struct {
+	BasePageData
 	Email string
 	Next  string
 	Error string
@@ -31,9 +32,10 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 			next := r.URL.Query().Get("next")
 
 			data := LoginData{
-				Email: "",
-				Next:  next,
-				Error: "",
+				BasePageData: NewBaseData(r.Context(), sess),
+				Email:        "",
+				Next:         next,
+				Error:        "",
 			}
 
 			if err := t.ExecuteTemplate(w, "login", data); err != nil {
@@ -52,9 +54,10 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 
 			if email == "" {
 				data := LoginData{
-					Email: "",
-					Next:  next,
-					Error: "Email is required",
+					BasePageData: NewBaseData(r.Context(), sess),
+					Email:        "",
+					Next:         next,
+					Error:        "Email is required",
 				}
 				if err := t.ExecuteTemplate(w, "login", data); err != nil {
 					log.Println("template execute error:", err)
@@ -79,9 +82,10 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 				)
 
 				data := LoginData{
-					Email: email,
-					Next:  next,
-					Error: "No account found for that email.",
+					BasePageData: NewBaseData(r.Context(), sess),
+					Email:        email,
+					Next:         next,
+					Error:        "No account found for that email.",
 				}
 				if err := t.ExecuteTemplate(w, "login", data); err != nil {
 					log.Println("template execute error:", err)
@@ -134,6 +138,26 @@ func Login(t *template.Template, sess *scs.SessionManager, pool *pgxpool.Pool, t
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
+	}
+}
+
+func Logout(sess *scs.SessionManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		slog.Info(
+			"user logged out",
+			"event.category", "auth",
+			"user.email", sess.GetString(ctx, "user_email"),
+		)
+
+		err := sess.Destroy(ctx)
+		if err != nil {
+			http.Error(w, "Could not log out", http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/projects", http.StatusSeeOther)
 	}
 }
 

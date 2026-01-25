@@ -110,7 +110,7 @@ func main() {
 	r.With(authMW, requireAdmin).Get("/admin", handlers.Admin(tpls["admin"], sessionManager))
 	r.With(authMW).Get("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
 	r.With(authMW).Post("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
-	r.With(authMW, requireAdmin).Get("/admin/projects", handlers.ListUnapprovedProjects(tpls["admin_projects"], projectRepo))
+	r.With(authMW, requireAdmin).Get("/admin/projects", handlers.ListUnapprovedProjects(tpls["admin_projects"], projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/approve", handlers.ApproveProject(projectRepo))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete", handlers.DeleteProject(projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/unapprove", handlers.UnapproveProject(projectRepo, sessionManager))
@@ -120,9 +120,10 @@ func main() {
 	r.Get("/login", handlers.Login(tpls["login"], sessionManager, dbPool, tokenStore))
 	r.Post("/login", handlers.Login(tpls["login"], sessionManager, dbPool, tokenStore))
 	r.Get("/magic-login", handlers.MagicLogin(sessionManager, dbPool, tokenStore))
-	r.Get("/about", handlers.About(tpls["about"]))
-	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo))
-	r.Get("/projects/{id}", handlers.ProjectDetail(tpls["project_detail"], projectRepo))
+	r.Get("/about", handlers.About(tpls["about"], sessionManager))
+	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo, sessionManager))
+	r.Get("/projects/{id}", handlers.ProjectDetail(tpls["project_detail"], projectRepo, sessionManager))
+	r.Post("/logout", handlers.Logout(sessionManager))
 
 	port := os.Getenv("PORT")
 	if port == "" {

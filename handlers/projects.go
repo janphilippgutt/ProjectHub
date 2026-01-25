@@ -24,16 +24,19 @@ import (
 // Error string
 // Title string
 type ProjectNewData struct {
+	BasePageData
 	Title       string
 	Description string
 	Error       string
 }
 
 type ProjectsPageData struct {
+	BasePageData
 	Projects []models.Project
 }
 
 type ProjectDetailPageData struct {
+	BasePageData
 	Project *models.Project
 }
 
@@ -43,6 +46,7 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 
 		case http.MethodGet:
 			data := ProjectNewData{
+				BasePageData: NewBaseData(r.Context(), sess),
 				// PopString reads and removes the message; empty string = no message = safe
 				Error: sess.PopString(r.Context(), "flash_error"),
 			}
@@ -161,16 +165,20 @@ func NewProject(t *template.Template, repo *repository.ProjectRepository, sess *
 	}
 }
 
-func ListProjects(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
+func ListProjects(t *template.Template, repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		projects, err := repo.ListApproved(r.Context())
+		ctx := r.Context()
+
+		projects, err := repo.ListApproved(ctx)
 		if err != nil {
 			log.Println("list projects error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		data := ProjectsPageData{Projects: projects}
+		data := ProjectsPageData{
+			BasePageData: NewBaseData(r.Context(), sess),
+			Projects:     projects}
 		if err := t.ExecuteTemplate(w, "projects", data); err != nil {
 			log.Println("template execute error:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -238,7 +246,7 @@ func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager)
 	}
 }
 
-func ProjectDetail(t *template.Template, repo *repository.ProjectRepository) http.HandlerFunc {
+func ProjectDetail(t *template.Template, repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -263,7 +271,8 @@ func ProjectDetail(t *template.Template, repo *repository.ProjectRepository) htt
 		}
 
 		data := ProjectDetailPageData{
-			Project: project,
+			BasePageData: NewBaseData(r.Context(), sess),
+			Project:      project,
 		}
 
 		if err := t.ExecuteTemplate(w, "project_detail", data); err != nil {

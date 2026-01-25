@@ -11,6 +11,7 @@ import (
 )
 
 type HomeData struct {
+	BasePageData
 	Name string
 }
 
@@ -26,7 +27,10 @@ func Home(t *template.Template, sess *scs.SessionManager) http.HandlerFunc {
 			name = "Guest"
 		}
 
-		data := HomeData{Name: name}
+		data := HomeData{
+			BasePageData: NewBaseData(r.Context(), sess),
+			Name:         name,
+		}
 
 		// Execute the page's entry template (named "home")
 		if err := t.ExecuteTemplate(w, "home", data); err != nil {
