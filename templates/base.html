@@ -34,19 +34,18 @@
       <!-- Right: Auth links -->
       <div class="flex items-center space-x-4">
 {{ if .IsAuthenticated }}
+  <span class="text-sm text-gray-500">
+    Logged in as {{ .UserEmail }}
+    {{ if .IsAdmin }}
+      <span class="ml-1 text-xs text-blue-600 font-medium">(Admin)</span>
+    {{ end }}
+  </span>
 <form method="POST" action="/logout" class="inline">
   <button class="text-sm text-gray-700 hover:underline">Logout</button>
 </form>
 {{ else }}
 <a href="/login" class="text-sm text-gray-600 hover:text-gray-900">
   Login
-</a>
-{{ end }}
-
-{{ if .IsAdmin }}
-<a href="/admin/projects"
-   class="text-sm font-medium text-blue-600 hover:text-blue-800">
-  Admin
 </a>
 {{ end }}
 
