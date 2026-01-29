@@ -74,14 +74,15 @@ func main() {
 
 	// parse per-page template sets (base + specific page)
 	tpls := map[string]*template.Template{
-		"home":           mustParse("home", "templates/base.html", "templates/home.html"),
-		"login":          mustParse("login", "templates/base.html", "templates/login.html"),
-		"about":          mustParse("about", "templates/base.html", "templates/about.html"),
-		"admin":          mustParse("admin", "templates/base.html", "templates/admin.html"),
-		"new_project":    mustParse("new_project", "templates/base.html", "templates/project_new.html"),
-		"projects":       mustParse("projects", "templates/base.html", "templates/projects.html"),
-		"admin_projects": mustParse("admin_projects", "templates/base.html", "templates/admin_projects.html"),
-		"project_detail": mustParse("project_detail", "templates/base.html", "templates/project_detail.html"),
+		"home":                    mustParse("home", "templates/base.html", "templates/home.html"),
+		"login":                   mustParse("login", "templates/base.html", "templates/login.html"),
+		"about":                   mustParse("about", "templates/base.html", "templates/about.html"),
+		"admin":                   mustParse("admin", "templates/base.html", "templates/admin.html"),
+		"new_project":             mustParse("new_project", "templates/base.html", "templates/project_new.html"),
+		"projects":                mustParse("projects", "templates/base.html", "templates/projects.html"),
+		"admin_projects":          mustParse("admin_projects", "templates/base.html", "templates/admin_projects.html"),
+		"project_detail":          mustParse("project_detail", "templates/base.html", "templates/project_detail.html"),
+		"admin_archived_projects": mustParse("admin_archived_projects", "templates/base.html", "templates/admin_archived_projects.html"),
 	}
 
 	r := chi.NewRouter()
@@ -114,6 +115,7 @@ func main() {
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/approve", handlers.ApproveProject(projectRepo))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete", handlers.DeleteProject(projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/unapprove", handlers.UnapproveProject(projectRepo, sessionManager))
+	r.With(authMW, requireAdmin).Get("/admin/projects/archived", handlers.AdminArchivedProjects(tpls["admin_archived_projects"], projectRepo, sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
@@ -124,6 +126,8 @@ func main() {
 	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo, sessionManager))
 	r.Get("/projects/{id}", handlers.ProjectDetail(tpls["project_detail"], projectRepo, sessionManager))
 	r.Post("/logout", handlers.Logout(sessionManager))
+	r.Post("/admin/projects/{id}/delete-forever", handlers.DeleteProjectForever(projectRepo, sessionManager))
+	r.Post("/admin/projects/{id}/restore", handlers.RestoreProject(projectRepo, sessionManager))
 
 	port := os.Getenv("PORT")
 	if port == "" {

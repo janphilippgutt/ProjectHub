@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -107,5 +108,104 @@ func ApproveProject(repo *repository.ProjectRepository) http.HandlerFunc {
 
 		// PRG pattern
 		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
+	}
+}
+
+func AdminArchivedProjects(
+	t *template.Template,
+	repo *repository.ProjectRepository,
+	sess *scs.SessionManager,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		projects, err := repo.ListArchived(r.Context())
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		data := struct {
+			BasePageData
+			Archived []models.Project
+		}{
+			BasePageData: NewBaseData(r.Context(), sess),
+			Archived:     projects,
+		}
+
+		t.ExecuteTemplate(w, "admin_archived_projects", data)
+	}
+}
+
+func RestoreProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid project ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := repo.Restore(ctx, id); err != nil {
+			slog.Error(
+				"failed to restore project",
+				"event.category", "admin",
+				"event.type", "restore",
+				"project.id", id,
+				"error", err,
+			)
+			http.Error(w, "Could not restore project", http.StatusInternalServerError)
+			return
+		}
+
+		userEmail := sess.GetString(ctx, "user_email")
+		slog.Info(
+			"project restored",
+			"event.category", "admin",
+			"event.type", "restore",
+			"user.id", userEmail,
+			"project.id", id,
+		)
+
+		http.Redirect(w, r, "/admin/projects", http.StatusSeeOther)
+	}
+}
+
+func DeleteProjectForever(
+	repo *repository.ProjectRepository,
+	sess *scs.SessionManager,
+) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid project ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := repo.DeleteForever(ctx, id); err != nil {
+			slog.Error(
+				"failed to permanently delete project",
+				"event.category", "admin",
+				"event.type", "delete_forever",
+				"project.id", id,
+				"error", err,
+			)
+			http.Error(w, "Could not delete project", http.StatusInternalServerError)
+			return
+		}
+
+		slog.Info(
+			"project permanently deleted",
+			"event.category", "admin",
+			"event.type", "delete_forever",
+			"user.id", sess.GetString(ctx, "user_email"),
+			"project.id", id,
+		)
+
+		http.Redirect(w, r, "/admin/projects/archived", http.StatusSeeOther)
 	}
 }

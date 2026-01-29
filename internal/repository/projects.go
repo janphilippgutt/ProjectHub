@@ -102,6 +102,39 @@ func (r *ProjectRepository) Create(
 	return err
 }
 
+func (r *ProjectRepository) ListArchived(ctx context.Context) ([]models.Project, error) {
+	rows, err := r.DB.Query(ctx, `
+		SELECT id, title, project_description, image_path, author_email, approved, created_at, deleted_at
+		FROM projects
+		WHERE deleted_at IS NOT NULL
+		ORDER BY deleted_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projects []models.Project
+	for rows.Next() {
+		var p models.Project
+		if err := rows.Scan(
+			&p.ID,
+			&p.Title,
+			&p.Description,
+			&p.ImagePath,
+			&p.AuthorEmail,
+			&p.Approved,
+			&p.CreatedAt,
+			&p.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+
+	return projects, nil
+}
+
 func (r *ProjectRepository) Approve(
 	ctx context.Context,
 	projectID int,
@@ -134,7 +167,7 @@ func (r *ProjectRepository) Unapprove(ctx context.Context, projectID int) error 
 	return nil
 }
 
-func (r *ProjectRepository) SoftDelete(ctx context.Context, projectID int) error {
+func (r *ProjectRepository) Archive(ctx context.Context, projectID int) error {
 	query := `
 		UPDATE projects
 		SET deleted_at = NOW()
@@ -184,4 +217,22 @@ func (r *ProjectRepository) GetApprovedByID(
 	}
 
 	return &p, nil
+}
+
+func (r *ProjectRepository) Restore(ctx context.Context, id int) error {
+	_, err := r.DB.Exec(ctx, `
+		UPDATE projects
+		SET deleted_at = NULL,
+		    approved = false
+		WHERE id = $1
+	`, id)
+	return err
+}
+
+func (r *ProjectRepository) DeleteForever(ctx context.Context, id int) error {
+	_, err := r.DB.Exec(ctx, `
+		DELETE FROM projects
+		WHERE id = $1
+	`, id)
+	return err
 }

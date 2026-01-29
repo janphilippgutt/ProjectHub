@@ -226,7 +226,7 @@ func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager)
 			return
 		}
 
-		err = repo.SoftDelete(ctx, id)
+		err = repo.Archive(ctx, id)
 		if err != nil {
 			http.Error(w, "Could not delete project", http.StatusInternalServerError)
 			return

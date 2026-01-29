@@ -10,4 +10,5 @@ type Project struct {
 	AuthorEmail string
 	Approved    bool
 	CreatedAt   time.Time
+	DeletedAt   time.Time
 }

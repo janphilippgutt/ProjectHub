@@ -38,6 +38,16 @@
     Logged in as {{ .UserEmail }}
     {{ if .IsAdmin }}
       <span class="ml-1 text-xs text-blue-600 font-medium">(Admin)</span>
+      <a href="/admin/projects/archived"
+      class="text-sm text-gray-600 hover:text-gray-900">
+      Archived
+      </a>
+
+      <a href="/admin/projects"
+      class="text-sm text-gray-600 hover:text-gray-900">
+      Project Approval
+      </a>
+
     {{ end }}
   </span>
 <form method="POST" action="/logout" class="inline">
