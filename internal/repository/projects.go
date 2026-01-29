@@ -220,13 +220,22 @@ func (r *ProjectRepository) GetApprovedByID(
 }
 
 func (r *ProjectRepository) Restore(ctx context.Context, id int) error {
-	_, err := r.DB.Exec(ctx, `
+	cmd, err := r.DB.Exec(ctx, `
 		UPDATE projects
 		SET deleted_at = NULL,
 		    approved = false
 		WHERE id = $1
+		  AND deleted_at IS NOT NULL
 	`, id)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return errors.New("project is not archived")
+	}
+
+	return nil
 }
 
 func (r *ProjectRepository) DeleteForever(ctx context.Context, id int) error {

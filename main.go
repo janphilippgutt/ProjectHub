@@ -113,9 +113,11 @@ func main() {
 	r.With(authMW).Post("/projects/new", handlers.NewProject(tpls["new_project"], projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Get("/admin/projects", handlers.ListUnapprovedProjects(tpls["admin_projects"], projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/approve", handlers.ApproveProject(projectRepo))
-	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete", handlers.DeleteProject(projectRepo, sessionManager))
+	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete", handlers.ArchiveProject(projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/unapprove", handlers.UnapproveProject(projectRepo, sessionManager))
 	r.With(authMW, requireAdmin).Get("/admin/projects/archived", handlers.AdminArchivedProjects(tpls["admin_archived_projects"], projectRepo, sessionManager))
+	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/delete-forever", handlers.DeleteProjectForever(projectRepo, sessionManager))
+	r.With(authMW, requireAdmin).Post("/admin/projects/{id}/restore", handlers.RestoreProject(projectRepo, sessionManager))
 
 	// inject the correct template set into each handler
 	r.Get("/", handlers.Home(tpls["home"], sessionManager))
@@ -126,8 +128,6 @@ func main() {
 	r.Get("/projects", handlers.ListProjects(tpls["projects"], projectRepo, sessionManager))
 	r.Get("/projects/{id}", handlers.ProjectDetail(tpls["project_detail"], projectRepo, sessionManager))
 	r.Post("/logout", handlers.Logout(sessionManager))
-	r.Post("/admin/projects/{id}/delete-forever", handlers.DeleteProjectForever(projectRepo, sessionManager))
-	r.Post("/admin/projects/{id}/restore", handlers.RestoreProject(projectRepo, sessionManager))
 
 	port := os.Getenv("PORT")
 	if port == "" {

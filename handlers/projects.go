@@ -215,7 +215,7 @@ func UnapproveProject(repo *repository.ProjectRepository, sess *scs.SessionManag
 	}
 }
 
-func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
+func ArchiveProject(repo *repository.ProjectRepository, sess *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -235,9 +235,9 @@ func DeleteProject(repo *repository.ProjectRepository, sess *scs.SessionManager)
 		userID := sess.GetString(ctx, "user_email")
 
 		slog.Info(
-			"project deleted",
+			"project archived",
 			"event.category", "admin",
-			"event.type", "delete",
+			"event.type", "archive",
 			"user.id", userID,
 			"project.id", id,
 		)
