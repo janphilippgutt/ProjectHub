@@ -19,6 +19,20 @@ import (
 	"github.com/janphilippgutt/casproject/middleware"
 )
 
+func ensureDirs() error {
+	dirs := []string{
+		"./uploads",
+		"./uploads/projects",
+	}
+
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func mustParse(name string, files ...string) *template.Template {
 	t := template.Must(template.ParseFiles(files...))
 	log.Printf("parsed templates for %s: %q\n", name, t.DefinedTemplates())
@@ -132,6 +146,10 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
+	}
+
+	if err := ensureDirs(); err != nil {
+		log.Fatal("failed to create upload dirs", err)
 	}
 
 	log.Println("Server running on :" + port)
