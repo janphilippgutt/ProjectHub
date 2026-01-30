@@ -89,13 +89,26 @@ Edit `.env` with your local configuration.
 ### 3. Start PostgeSQL
 `docker compose up -d`
 
-### 4. Run migrations
-`psql -h localhost -p 5433 -U your_user -d projecthub < schema.sql`
+### 4. Create an admin user (dev only)
+`docker exec -it cas_postgres psql -U your_user -d your_db_name`
+
+`INSERT INTO users (email, role)
+VALUES ('example@example.com', 'admin');
+`
 
 ### 5. Run the application
 `go run main.go`
 
 Visit: http://localhost:8080 (or the port you specified in .env respectively)
+
+### Database migrations
+- All schema changes are handled via SQL migrations in /migrations
+- On a fresh database, migrations are applied automatically
+- On an existing database, apply migrations manually or reset the volume:
+
+`docker compose down -v`
+
+`docker compose up`
 
 ## Security Considerations
 - Environment variables are used for all secrets
