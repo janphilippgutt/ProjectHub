@@ -16,52 +16,96 @@
         <h1>My Cas App</h1>
     </header>
 
-    <nav class="border-b bg-white">
+<nav class="border-b bg-white">
   <div class="max-w-6xl mx-auto px-4">
     <div class="flex h-16 items-center justify-between">
 
-      <!-- Left: Brand / Main nav -->
+      <!-- Left: Brand + primary navigation -->
       <div class="flex items-center space-x-6">
         <a href="/projects" class="text-lg font-semibold text-gray-900">
           CAS Projects
         </a>
 
-        <a href="/projects" class="text-sm text-gray-600 hover:text-gray-900">
+        <a href="/projects"
+           class="hidden sm:inline text-sm font-medium text-gray-700 hover:text-gray-900">
           Projects
         </a>
+
+        {{ if .IsAdmin }}
+          <a href="/admin/projects/archived"
+             class="hidden sm:inline text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            Archived
+          </a>
+
+          <a href="/admin/projects"
+             class="hidden sm:inline text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            Approval
+          </a>
+        {{ end }}
       </div>
 
-      <!-- Right: Auth links -->
-      <div class="flex items-center space-x-4">
-{{ if .IsAuthenticated }}
-  <span class="text-sm text-gray-500">
-    Logged in as {{ .UserEmail }}
-    {{ if .IsAdmin }}
-      <span class="ml-1 text-xs text-blue-600 font-medium">(Admin)</span>
-      <a href="/admin/projects/archived"
-      class="text-sm text-gray-600 hover:text-gray-900">
-      Archived
-      </a>
+      <!-- Right: user status + actions -->
+      <div class="flex items-center space-x-4 text-sm">
 
-      <a href="/admin/projects"
-      class="text-sm text-gray-600 hover:text-gray-900">
-      Project Approval
-      </a>
+        {{ if .IsAuthenticated }}
 
-    {{ end }}
-  </span>
-<form method="POST" action="/logout" class="inline">
-  <button class="text-sm text-gray-700 hover:underline">Logout</button>
-</form>
-{{ else }}
-<a href="/login" class="text-sm text-gray-600 hover:text-gray-900">
-  Login
-</a>
-{{ end }}
+          <div class="hidden sm:flex items-center space-x-2 text-gray-600">
+            <span>
+              Logged in as
+              <span class="font-medium text-gray-800">
+                {{ .UserEmail }}
+              </span>
+            </span>
+
+            {{ if .IsAdmin }}
+              <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                Admin
+              </span>
+            {{ end }}
+          </div>
+
+          <span class="hidden sm:inline text-gray-300">|</span>
+
+          <form method="POST" action="/logout" class="inline">
+            <button
+              class="text-sm font-medium text-red-600 hover:text-red-700">
+              Logout
+            </button>
+          </form>
+
+        {{ else }}
+
+          <a href="/login"
+             class="text-sm font-medium text-gray-700 hover:text-gray-900">
+            Login
+          </a>
+
+        {{ end }}
 
       </div>
-
     </div>
+
+    <!-- Mobile-only secondary nav -->
+    {{ if .IsAuthenticated }}
+      <div class="sm:hidden flex flex-wrap gap-x-4 gap-y-2 pb-3 text-sm">
+        <a href="/projects" class="text-gray-700 hover:text-gray-900">
+          Projects
+        </a>
+
+        {{ if .IsAdmin }}
+          <a href="/admin/projects/archived"
+             class="text-indigo-600 hover:text-indigo-800">
+            Archived
+          </a>
+
+          <a href="/admin/projects"
+             class="text-indigo-600 hover:text-indigo-800">
+            Approval
+          </a>
+        {{ end }}
+      </div>
+    {{ end }}
+
   </div>
 </nav>
 
