@@ -86,7 +86,7 @@ This design prepares the application for production-grade observability pipeline
 `
 Edit `.env` with your local configuration.
 
-### 3. Start PostgeSQL
+### 3. Start PostgreSQL
 `docker compose up -d`
 
 ### 4. Create an admin user (dev only)
@@ -102,7 +102,7 @@ VALUES ('example@example.com', 'admin');
 Visit: http://localhost:8080 (or the port you specified in .env respectively)
 
 ### Database migrations
-- All schema changes are handled via SQL migrations in /migrations
+- All schema changes are handled via SQL migrations in `/migrations`
 - On a fresh database, migrations are applied automatically
 - On an existing database, apply migrations manually or reset the volume:
 
