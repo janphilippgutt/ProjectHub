@@ -49,6 +49,11 @@
 
         {{ if .IsAuthenticated }}
 
+          <a href="/projects/new"
+           class="hidden sm:inline text-sm font-medium text-gray-700 hover:text-gray-900">
+              Create Project
+          </a>
+
           <div class="hidden sm:flex items-center space-x-2 text-gray-600">
             <span>
               Logged in as
